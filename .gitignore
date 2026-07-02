@@ -26,3 +26,4 @@ env/
 build/
 dist/
 *.spec
+package_env/

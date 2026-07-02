@@ -100,6 +100,9 @@ TRANSLATIONS = {
         # Tab 3: Auxiliary
         "aux_screen_title": "物理显示屏幕选择",
         "aux_screen_label": "叠加屏幕:",
+        "aux_margin_top": "顶部间距:",
+        "aux_margin_bottom": "底部间距:",
+        "aux_margin_desc": "（适用于窗口化游戏，用于收缩遮罩叠加区域）",
         "aux_split_title": "分屏引导线 (减少单次光流范围)",
         "aux_split_enabled": "启用分屏引导线",
         "aux_split_type": "分屏方式:",
@@ -150,6 +153,10 @@ TRANSLATIONS = {
         "preset_save_new": "保存为新方案:",
         "preset_btn_save": " 保存当前配置为新预设 ",
         "preset_btn_delete": " 删除当前预设 ",
+        "preset_btn_reset": " 恢复默认设置 ",
+        "msg_confirm_reset_title": "确认恢复默认",
+        "msg_confirm_reset_text": "确定要将所有设置恢复为程序默认配置吗？该操作不会删除您已保存的预设方案。",
+        "msg_reset_done": "已成功恢复全部默认设置。",
         
         # Language Setting Group
         "lang_title": "界面语言设置 (Language Settings)",
@@ -235,8 +242,11 @@ TRANSLATIONS = {
         "crosshair_outline_color": "Outline Color:",
         
         # Tab 3: Auxiliary
-        "aux_screen_title": "Monitor Selection",
+        "aux_screen_title": "Physical Display Selection",
         "aux_screen_label": "Overlay Screen:",
+        "aux_margin_top": "Top Margin:",
+        "aux_margin_bottom": "Bottom Margin:",
+        "aux_margin_desc": "(Useful for windowed games — shrinks overlay coverage area)",
         "aux_split_title": "Split Screen Lines (Reduce single optical flow region)",
         "aux_split_enabled": "Enable Split Lines",
         "aux_split_type": "Split Type:",
@@ -287,6 +297,10 @@ TRANSLATIONS = {
         "preset_save_new": "Save Current as New:",
         "preset_btn_save": " Save Preset ",
         "preset_btn_delete": " Delete Preset ",
+        "preset_btn_reset": " Restore Defaults ",
+        "msg_confirm_reset_title": "Confirm Reset",
+        "msg_confirm_reset_text": "Reset all settings to program defaults? Your saved presets will NOT be deleted.",
+        "msg_reset_done": "All settings have been restored to defaults.",
         
         # Language Setting Group
         "lang_title": "Language Settings",
@@ -342,6 +356,9 @@ DEFAULT_CONFIG = {
     "edge_crosshair_width": 40,
     "edge_crosshair_length": 250,
     "edge_crosshair_arrow_size": 25,
+    
+    "overlay_margin_top": 0,           # Pixels to shrink overlay from top (for windowed games)
+    "overlay_margin_bottom": 0,        # Pixels to shrink overlay from bottom (for windowed games)
     
     "hotkeys": {
         "toggle_overlay": "ctrl+alt+o",

@@ -69,15 +69,28 @@ class OverlayWindow(QWidget):
     def update_geometry(self):
         screen = QApplication.primaryScreen()
         if screen:
-            self.setGeometry(screen.geometry())
+            self._current_screen_index = 0
+            self.setGeometry(self._get_margin_geometry(screen.geometry()))
+            
+    def _get_margin_geometry(self, screen_geom):
+        """Returns the screen geometry with top/bottom margins applied."""
+        margin_top = int(self.config_manager.get("overlay_margin_top", 0))
+        margin_bottom = int(self.config_manager.get("overlay_margin_bottom", 0))
+        from PySide6.QtCore import QRect
+        return QRect(
+            screen_geom.x(),
+            screen_geom.y() + margin_top,
+            screen_geom.width(),
+            screen_geom.height() - margin_top - margin_bottom
+        )
             
     def set_screen_index(self, index):
         """Sets overlay geometry to the chosen screen index."""
         screens = QApplication.screens()
         if 0 <= index < len(screens):
-            self.setGeometry(screens[index].geometry())
+            self._current_screen_index = index
+            self.setGeometry(self._get_margin_geometry(screens[index].geometry()))
             self.update()
-            
     def update_metrics(self):
         """Poll CPU and RAM stats from psutil in a lightweight manner."""
         if self.config_manager.get("telemetry_enabled", False) and self.isVisible():
@@ -107,11 +120,14 @@ class OverlayWindow(QWidget):
                     self.show()
                     
                 # 3. Synchronize geometry if screen resolution changed (common in fullscreen games)
-                screen = QApplication.primaryScreen()
+                screens = QApplication.screens()
+                screen_idx = getattr(self, '_current_screen_index', 0)
+                screen = screens[screen_idx] if 0 <= screen_idx < len(screens) else QApplication.primaryScreen()
                 if screen:
-                    screen_geom = screen.geometry()
-                    if self.geometry() != screen_geom:
-                        self.setGeometry(screen_geom)
+                    target_geom = self._get_margin_geometry(screen.geometry())
+                    if self.geometry() != target_geom:
+                        self.setGeometry(target_geom)
+
                         
                 # 4. Handle cross-process window ownership to stay on top of fullscreen games
                 hwnd = int(self.winId())

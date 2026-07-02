@@ -71,6 +71,7 @@ class Anti3DApp(QObject):
     def connect_signals(self):
         # Control panel updates settings
         self.control_panel.settings_changed.connect(self.update_overlay_visibility)
+        self.control_panel.settings_changed.connect(self.refresh_overlay_geometry)
         self.control_panel.screen_changed.connect(self.overlay_window.set_screen_index)
         self.control_panel.exit_requested.connect(self.exit_app)
         self.control_panel.language_changed.connect(self.retranslate_tray_menu)
@@ -148,7 +149,18 @@ class Anti3DApp(QObject):
         self.control_panel.raise_()
         self.control_panel.activateWindow()
 
+    def refresh_overlay_geometry(self):
+        """Recalculate overlay window geometry applying current top/bottom margins."""
+        screens = QApplication.screens()
+        screen_idx = getattr(self.overlay_window, '_current_screen_index', 0)
+        screen = screens[screen_idx] if 0 <= screen_idx < len(screens) else QApplication.primaryScreen()
+        if screen:
+            self.overlay_window.setGeometry(
+                self.overlay_window._get_margin_geometry(screen.geometry())
+            )
+
     def update_overlay_visibility(self):
+
         is_on = self.config_manager.get("overlay_enabled", True)
         if is_on:
             self.overlay_window.show()

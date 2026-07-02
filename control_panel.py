@@ -584,13 +584,45 @@ class ControlPanel(QMainWindow):
         
         # 1. Screen selection (Left Column)
         self.group_screen = QGroupBox("物理显示屏幕选择")
-        screen_layout = QHBoxLayout(self.group_screen)
+        screen_form = QFormLayout(self.group_screen)
+        screen_row = QHBoxLayout()
         self.lbl_screen_title = QLabel("叠加屏幕:")
         self.cb_screen = QComboBox()
         self.refresh_screens()
         self.cb_screen.currentIndexChanged.connect(self.on_screen_changed)
-        screen_layout.addWidget(self.lbl_screen_title)
-        screen_layout.addWidget(self.cb_screen)
+        screen_row.addWidget(self.lbl_screen_title)
+        screen_row.addWidget(self.cb_screen)
+        screen_form.addRow(screen_row)
+        
+        # Margin top slider
+        self.lbl_margin_top_title = QLabel("顶部间距:")
+        self.lbl_margin_top = QLabel("0px")
+        self.slider_margin_top = QSlider(Qt.Orientation.Horizontal)
+        self.slider_margin_top.setRange(0, 500)
+        self.slider_margin_top.setValue(0)
+        self.slider_margin_top.valueChanged.connect(self.save_margin_settings)
+        h_margin_top = QHBoxLayout()
+        h_margin_top.addWidget(self.slider_margin_top)
+        h_margin_top.addWidget(self.lbl_margin_top)
+        screen_form.addRow(self.lbl_margin_top_title, h_margin_top)
+        
+        # Margin bottom slider
+        self.lbl_margin_bottom_title = QLabel("底部间距:")
+        self.lbl_margin_bottom = QLabel("0px")
+        self.slider_margin_bottom = QSlider(Qt.Orientation.Horizontal)
+        self.slider_margin_bottom.setRange(0, 500)
+        self.slider_margin_bottom.setValue(0)
+        self.slider_margin_bottom.valueChanged.connect(self.save_margin_settings)
+        h_margin_bottom = QHBoxLayout()
+        h_margin_bottom.addWidget(self.slider_margin_bottom)
+        h_margin_bottom.addWidget(self.lbl_margin_bottom)
+        screen_form.addRow(self.lbl_margin_bottom_title, h_margin_bottom)
+        
+        # Hint label
+        self.lbl_margin_desc = QLabel("（适用于窗口化游戏，用于收缩遮罩叠加区域）")
+        self.lbl_margin_desc.setStyleSheet("color: #6E6E7E; font-size: 11px;")
+        screen_form.addRow(self.lbl_margin_desc)
+        
         left_layout.addWidget(self.group_screen)
         
         # 2. Split Lines (Left Column)
@@ -812,6 +844,15 @@ class ControlPanel(QMainWindow):
             self.update_color_button_ui(self.btn_clock_color, color.name())
             self.settings_changed.emit()
 
+    def save_margin_settings(self):
+        margin_top = self.slider_margin_top.value()
+        margin_bottom = self.slider_margin_bottom.value()
+        self.config_manager.set("overlay_margin_top", margin_top)
+        self.config_manager.set("overlay_margin_bottom", margin_bottom)
+        self.lbl_margin_top.setText(f"{margin_top}px")
+        self.lbl_margin_bottom.setText(f"{margin_bottom}px")
+        self.settings_changed.emit()
+
     def save_auxiliary_settings(self):
         split_enabled = self.chk_split_enabled.isChecked()
         split_types = ["vertical", "horizontal", "cross"]
@@ -1000,6 +1041,26 @@ class ControlPanel(QMainWindow):
         
         g_layout.addRow("", h_layout_btns)
         
+        # Reset to defaults button (separate row, prominent warning style)
+        self.btn_reset_preset = QPushButton(" 恢复默认设置 ")
+        self.btn_reset_preset.setStyleSheet("""
+            QPushButton {
+                background-color: #252535;
+                color: #FF9500;
+                border: 1px solid #FF9500;
+                border-radius: 6px;
+                padding: 6px 14px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #FF9500;
+                color: #1A1A22;
+            }
+        """)
+        self.btn_reset_preset.clicked.connect(self.reset_to_defaults)
+        g_layout.addRow("", self.btn_reset_preset)
+        
         layout.addWidget(self.group_preset)
         layout.addStretch()
         self.tabs.addTab(tab, " 方案预设 ")
@@ -1066,6 +1127,38 @@ class ControlPanel(QMainWindow):
             self.load_settings_into_ui()
             self.settings_changed.emit()
             QMessageBox.information(self, self.config_manager.tr("msg_success"), self.config_manager.tr("msg_preset_deleted", name))
+
+    def reset_to_defaults(self):
+        """Reset all visual/overlay settings to program defaults, preserving language, hotkeys, and presets."""
+        reply = QMessageBox.question(
+            self,
+            self.config_manager.tr("msg_confirm_reset_title"),
+            self.config_manager.tr("msg_confirm_reset_text"),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        from config import DEFAULT_CONFIG
+        # Keys to preserve (user-specific, non-visual settings except active_preset)
+        preserve_keys = {"language", "hotkeys", "game_processes", "auto_trigger_enabled",
+                         "presets"}
+
+        for key, value in DEFAULT_CONFIG.items():
+            if key not in preserve_keys:
+                self.config_manager.config[key] = value
+
+        # Also reset the active preset selection back to built-in default
+        self.config_manager.config["active_preset"] = "默认模式"
+
+        self.config_manager.save()
+        self.load_settings_into_ui()
+        self.settings_changed.emit()
+        QMessageBox.information(
+            self,
+            self.config_manager.tr("msg_success"),
+            self.config_manager.tr("msg_reset_done")
+        )
 
     # ----------------------------------------------------
     # DATA BINDING HELPERS
@@ -1231,6 +1324,15 @@ class ControlPanel(QMainWindow):
         
         self.update_color_button_ui(self.btn_clock_color, self.config_manager.get("clock_color", "#FFFFFF"))
 
+        # Overlay margins
+        margin_top = self.config_manager.get("overlay_margin_top", 0)
+        self.slider_margin_top.setValue(int(margin_top))
+        self.lbl_margin_top.setText(f"{int(margin_top)}px")
+        
+        margin_bottom = self.config_manager.get("overlay_margin_bottom", 0)
+        self.slider_margin_bottom.setValue(int(margin_bottom))
+        self.lbl_margin_bottom.setText(f"{int(margin_bottom)}px")
+
         # 6. Auto-activation
         self.chk_auto_enabled.setChecked(self.config_manager.get("auto_trigger_enabled", True))
         
@@ -1358,6 +1460,9 @@ class ControlPanel(QMainWindow):
         # Tab 3: Auxiliary
         self.group_screen.setTitle(tr("aux_screen_title"))
         self.lbl_screen_title.setText(tr("aux_screen_label"))
+        self.lbl_margin_top_title.setText(tr("aux_margin_top"))
+        self.lbl_margin_bottom_title.setText(tr("aux_margin_bottom"))
+        self.lbl_margin_desc.setText(tr("aux_margin_desc"))
         
         self.group_split.setTitle(tr("aux_split_title"))
         self.chk_split_enabled.setText(tr("aux_split_enabled"))
@@ -1438,6 +1543,7 @@ class ControlPanel(QMainWindow):
         self.lbl_preset_save_new.setText(tr("preset_save_new"))
         self.btn_save_preset.setText(tr("preset_btn_save"))
         self.btn_del_preset.setText(tr("preset_btn_delete"))
+        self.btn_reset_preset.setText(tr("preset_btn_reset"))
         
         # Main exit button & notice
         self.lbl_notice.setText("This application runs in the background. Closing hides it to the tray; right-click tray to exit." if tr("lang_en") == "English" else "本软件在后台运行，点击关闭将隐藏至托盘，在托盘右键可退出软件。")
