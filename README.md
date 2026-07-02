@@ -2,6 +2,8 @@
 
 Anti3D-Overlay 是一款专为 3D 游戏玩家设计的轻量级屏幕辅助工具。通过在游戏窗口上方叠加动态可定制的**边缘减速遮罩**、**多形态中心准星**、**分屏引导线**以及**角落参考信息**，帮助降低视觉光流刺激，建立强有力的中心参考锚点，从而有效缓解 3D 晕动症（游戏眩晕）。
 
+> 📦 **快捷下载**：可以直接在 [GitHub Releases](https://github.com/hikwin/anti3d-overlay/releases) 页面直接下载已打包好的独立绿色免安装版运行包。
+
 ---
 
 ## 🌟 核心功能 | [English Version](#-core-features)
@@ -82,6 +84,8 @@ python main.py
 # Anti3D-Overlay (Anti-3D Motion Sickness Helper) | [中文版](#anti3d-overlay-防-3d-晕动症叠加引导工具-english-version)
 
 Anti3D-Overlay is a lightweight screen overlay assistant designed for 3D gamers. By rendering a customizable **peripheral speed-reducing mask**, **multi-style central crosshairs**, **screen split guides**, and **corner reference stats**, it helps reduce optical flow stimulation, build a strong visual center of focus, and effectively alleviate 3D motion sickness (simulator sickness).
+
+> 📦 **Quick Download**: You can directly download the pre-packaged standalone executable from [GitHub Releases](https://github.com/hikwin/anti3d-overlay/releases).
 
 ---
 
